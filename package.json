@@ -1,0 +1,13 @@
+{
+    "name": "forklift.js",
+    "version": "0.1.5",
+    "description": "JavaScript UI Management System",
+    "keywords": [
+      "forklift",
+      "ui",
+      "management"
+    ],
+    "author": "ImportPython - Brendan Fuller (http://brendanfuller.com)",
+    "license": "MIT"
+  }
+  
