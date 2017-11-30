@@ -151,6 +151,7 @@ class BoxHandler {
         if (this.totalBoxes > 0) {
             return true
         }
+        return true
     }
 }
 class ForkliftHandler {
@@ -307,6 +308,7 @@ class ForkliftHandler {
                     boxes[box].Object.onUnitLoad(me.start)
                 }, 50)
             }
+            this.palettes[palette].Class.onUnitLoad()
         }
     }
     _checkBoxes() {
@@ -411,6 +413,7 @@ class PaletteLoader {
         if (this.elements[name] != null) return true
         return false
     }
+    onUnitLoad() {}
 }
 /**
 * PaletteBox - a BOX extender class for use with a PALETTELOADER
