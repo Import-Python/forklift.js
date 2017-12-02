@@ -245,11 +245,12 @@ class ForkliftHandler {
                     forklift.API.warn(`[forklift.js] %cCould not load: ${palette}`, 'color: purple')
                     let file = e.stack.split("\n")[1].split("(").pop().slice(0, -1)
                     forklift.API.error(`[forklift.js] %c'${e.message}' in '${file}'`)
+                    if (e) throw e;   
                 }
             } catch (e) {
                 let file = e.stack.split("\n")[0].split("Error: Cannot find module '").pop().slice(0, -1)
                 forklift.API.error(`[forklift.js] %cCannot find '${file}'`)
-                console.log(e)
+                if (e) throw e;   
             }
         }
         let difference = (performance.now() - this.start).toFixed(2)
@@ -274,11 +275,13 @@ class ForkliftHandler {
                     forklift.API.warn(`[forklift.js] %cCould not load Unit: ${unit}`, 'color: purple')
                     let file = e.stack.split("\n")[1].split("(").pop().slice(0, -1)
                     forklift.API.error(`[forklift.js] %c'${e.message}' in '${file}'`)
+                    if (e) throw e;   
                 }
             } catch (e) {
                 let file = e.stack.split("\n")[0].split("Error: Cannot find module '").pop().slice(0, -1)
                 forklift.API.error(`[forklift.js] %cCannot find '${file}'`)
-                console.log(e)
+
+                if (e) throw e;   
             }
             let allPalette = ""
             let loop = 0
