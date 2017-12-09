@@ -1,5 +1,5 @@
 {
-    "name": "forklift.js",
+    "name": "forkl-ift.js",
     "version": "0.1.8",
     "description": "JavaScript UI Management System",
     "keywords": [
@@ -7,7 +7,7 @@
       "ui",
       "management"
     ],
-    "author": "ImportPython - Brendan Fuller (http://brendanfuller.com)",
+    "author": "ImportPython",
     "license": "MIT"
   }
   
