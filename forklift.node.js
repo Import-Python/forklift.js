@@ -128,11 +128,9 @@ class BoxHandler {
     }
     boxLoaded(id) {
         this.boxes[id].boxLoaded = true
-        this.parent._checkBoxes()
     }
     contentLoaded(id) {
         this.boxes[id].contentLoaded = true
-        this.parent._checkBoxes()
     }
     getBoxes() {
         return this.boxes
@@ -239,23 +237,35 @@ class ForkliftHandler {
                 this.palettes[palette].Palette = require(`./${this.palettes[palette].File}`)
                 try {
                     let difference = (performance.now() - this.start).toFixed(2)
-                    forklift.API.log(`[forklift.js] %cLoading Palette: ${palette} | ${difference}ms`, 'color: orange;')
+                    forklift.API.log(`[forklift.js] %cLoaded Palette: ${palette} | ${difference}ms`, 'color: orange;')
                     this.palettes[palette].Class = new this.palettes[palette].Palette(palette)
                 } catch (e) {
-                    forklift.API.warn(`[forklift.js] %cCould not load: ${palette}`, 'color: purple')
-                    let file = e.stack.split("\n")[1].split("(").pop().slice(0, -1)
-                    forklift.API.error(`[forklift.js] %c'${e.message}' in '${file}'`)
-                    if (e) throw e;   
+                    if (!e.message == "this.palettes[palette].Palette is not a constructor") {
+                        forklift.API.warn(`[forklift.js] %cCould not load: ${palette}`, 'color: purple')
+                        let file = e.stack.split("\n")[1].split("(").pop().slice(0, -1)
+                        forklift.API.error(`[forklift.js] %c'${e.message}' in '${file}'`)
+                        if (e) throw e;  
+                    } 
                 }
             } catch (e) {
-                let file = e.stack.split("\n")[0].split("Error: Cannot find module '").pop().slice(0, -1)
-                forklift.API.error(`[forklift.js] %cCannot find '${file}'`)
+                let error = e.stack.split("\n")[0].split("Error: Cannot find module '").pop()
+                if (error == "TypeError: Class extends value undefined is not a constructor or null") {
+                    let difference = (performance.now() - this.start).toFixed(2)
+                    forklift.API.log(`[forklift.js] %cInvaild Palette ${palette} | ${difference}ms`, 'color: red')
+                } else if(error == "TypeError: this.palettes[palette].Palette is not a constructor") {
+                    let difference = (performance.now() - this.start).toFixed(2)
+                    forklift.API.log(`[forklift.js] %cCan find palette box! ${palette}'`, 'color: red')
+                } else {
+                   forklift.API.error(`[forklift.js] %cCannot find '${error}'`)
                 if (e) throw e;   
+                }
+                 
             }
         }
         let difference = (performance.now() - this.start).toFixed(2)
         forklift.API.log(`[forklift.js] %cPalette(s) Loaded | ${difference}ms`, 'color: orange')
         forklift.API.log(`[forklift.js] %cLoading Boxes... | ${difference}ms`, 'color: green')
+        this._checkBoxes()
     }
     _loadUnits() {
         let me = this
@@ -311,7 +321,12 @@ class ForkliftHandler {
                     boxes[box].Object.onUnitLoad(me.start)
                 }, 50)
             }
-            this.palettes[palette].Class.onUnitLoad()
+            try {
+                this.palettes[palette].Class.onUnitLoad()
+            }
+            catch (e) {
+                
+            }
         }
     }
     _checkBoxes() {
@@ -359,7 +374,7 @@ class PaletteLoader {
         if (!this._isBox(name)) {
             this.elements[name] = {}
             this.elements[name].ElementTag = element
-            var data = {}
+            let data = {}
             data.file = this.file
             data.name = name
             data.id = this.id
@@ -633,6 +648,46 @@ class ForkliftApp {
     constructor() { }
     run() {
         forklift.Handlers._loadPalettes()
+    }
+    /**
+     * loadAll - Loads all javascript files in a directory recursively. 
+     * File names are PaletteID and if a palette can not load, it won't
+     * @param {String} directory 
+     */
+    loadAll(directory) {
+        const fs = require('fs');
+        const path = require('path');
+        const splitAt = index => x => [x.slice(0, index), x.slice(index)]
+
+        let replaceAll = function (str, find, replace) {
+            return str.replace(new RegExp(find, 'g'), replace);
+        }
+
+        let walkSync = function(dir, filelist) {
+            var path = path || require('path');
+            var fs = fs || require('fs'),
+                files = fs.readdirSync(dir);
+            filelist = filelist || [];
+            files.forEach(function(file) {
+                if (fs.statSync(path.join(dir, file)).isDirectory()) {
+                    filelist = walkSync(path.join(dir, file), filelist);
+                }
+                else {
+                    if (file.split(".")[1] == "js") {
+                        filelist.push(path.join(dir, file));
+                    }
+                }
+            });
+            return filelist;
+        };
+        let files = walkSync(directory)
+        for (let file in files) {
+            let f = files[file]
+            f = f.split(".")[0]
+            let id = splitAt(f.lastIndexOf("\\")+1)(f)[1].toUpperCase()
+            f = f.replace(/\\/g,"/");
+            forklift.Handlers.newPalette(id, `./${f}.js`)
+        }
     }
     loadPalette(paletteID, file) {
         forklift.Handlers.newPalette(paletteID, file)
